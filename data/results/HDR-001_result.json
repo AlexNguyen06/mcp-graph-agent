@@ -1,11 +1,21 @@
 {
-  "status": "no_counterexample_found",
+  "status": "counterexample_found",
   "conjecture_id": "HDR-001",
+  "graph": {
+    "format": "graph6",
+    "value": "V~^~~~~^~]~vVn}v~~n~nz~~~~^vz~~~N|}nn~~~~~n_"
+  },
+  "verification": {
+    "hypotheses_satisfied": true,
+    "left_value": 0.9090909090909091,
+    "right_value": 0.907340034257034,
+    "conclusion_satisfied": false,
+    "is_counterexample": true
+  },
   "search": {
     "method": "local_search",
-    "timeout_reached": false,
-    "time_seconds": 1.7428,
-    "iterations": 3000,
-    "best_score": -0.03461276152976134
+    "time_seconds": 0.7114,
+    "iterations": 799,
+    "best_score": 0.001750874833875038
   }
 }

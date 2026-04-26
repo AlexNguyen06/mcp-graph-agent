@@ -1,6 +1,6 @@
 id,known_counterexample_valid,known_graph_order,status,method,time_seconds,iterations,found_graph_order,best_score,comment
-HDR-001,True,14,no_counterexample_found,local_search,1.7428,3000,,-0.03461276152976134,aucun contre-exemple trouvé
-HDR-002,True,19,counterexample_found,local_search,0.0542,88,14,0.07165766650302707,contre-exemple vérifié indépendamment
-HDR-003,True,18,no_counterexample_found,local_search,9.7996,3000,,-3.0,aucun contre-exemple trouvé
-HDR-004,True,19,no_counterexample_found,local_search,6.1127,3000,,-1.0499999999999998,aucun contre-exemple trouvé
-HDR-005,True,14,no_counterexample_found,local_search,10.0044,2112,,-0.19999999999999996,aucun contre-exemple trouvé
+HDR-001,True,14,counterexample_found,local_search,0.7114,799,23,0.001750874833875038,contre-exemple vérifié indépendamment
+HDR-002,True,19,counterexample_found,local_search,0.0041,1,28,0.08618883979708691,contre-exemple vérifié indépendamment
+HDR-003,True,18,no_counterexample_found,local_search,0.8675,3000,,-3.0,aucun contre-exemple trouvé
+HDR-004,True,19,no_counterexample_found,local_search,3.6755,3000,,0.0,aucun contre-exemple trouvé
+HDR-005,True,14,no_counterexample_found,local_search,1.3351,3000,,-0.6000000000000001,aucun contre-exemple trouvé

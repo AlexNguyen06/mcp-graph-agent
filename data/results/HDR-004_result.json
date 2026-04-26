@@ -4,8 +4,8 @@
   "search": {
     "method": "local_search",
     "timeout_reached": false,
-    "time_seconds": 6.1127,
+    "time_seconds": 3.6755,
     "iterations": 3000,
-    "best_score": -1.0499999999999998
+    "best_score": 0.0
   }
 }
