@@ -1,0 +1,17 @@
+{
+  "id": "HDR-001",
+  "domain": "graph_theory",
+  "graph_class": "connected",
+  "left_invariant": "density",
+  "relation": "<=",
+  "right_expression": "65/98 + (18/29)*rad - (17/53)*rad^2 + (1/28)*rad^3",
+  "parameters": {
+    "max_order": 30,
+    "timeout_seconds": 10,
+    "iterations": 3000
+  },
+  "known_counterexample": {
+    "format": "graph6",
+    "value": "M~~~~zz|~^z~n~^~_"
+  }
+}

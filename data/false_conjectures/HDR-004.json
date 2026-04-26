@@ -1,0 +1,17 @@
+{
+  "id": "HDR-004",
+  "domain": "graph_theory",
+  "graph_class": "connected",
+  "left_invariant": "edge_connectivity",
+  "relation": ">=",
+  "right_expression": "11/4 - (91/40)*delta + (11/20)*delta^2 - (1/40)*delta^3",
+  "parameters": {
+    "max_order": 30,
+    "timeout_seconds": 10,
+    "iterations": 3000
+  },
+  "known_counterexample": {
+    "format": "graph6",
+    "value": "Rvimw?@?WB_N?^?Ng?I_@HOKM?zo@_"
+  }
+}

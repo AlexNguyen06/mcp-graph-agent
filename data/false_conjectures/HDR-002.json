@@ -1,0 +1,17 @@
+{
+  "id": "HDR-002",
+  "domain": "graph_theory",
+  "graph_class": "connected",
+  "left_invariant": "avg",
+  "relation": "<=",
+  "right_expression": "67/9 - (7/60)*delta + (7/97)*delta^2",
+  "parameters": {
+    "max_order": 30,
+    "timeout_seconds": 10,
+    "iterations": 3000
+  },
+  "known_counterexample": {
+    "format": "graph6",
+    "value": "RqPAA@?OA?F~N}N}F~@~oN}?~w@~o?"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "HDR-005",
+  "domain": "graph_theory",
+  "graph_class": "connected",
+  "left_invariant": "rad",
+  "relation": ">=",
+  "right_expression": "4/5 + (1/5)*gamma",
+  "parameters": {
+    "max_order": 30,
+    "timeout_seconds": 10,
+    "iterations": 3000
+  },
+  "known_counterexample": {
+    "format": "graph6",
+    "value": "M???A?_C?O?_?__^_"
+  }
+}

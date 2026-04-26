@@ -1,0 +1,17 @@
+{
+  "id": "HDR-003",
+  "domain": "graph_theory",
+  "graph_class": "connected",
+  "left_invariant": "kappa",
+  "relation": ">=",
+  "right_expression": "-3 + delta",
+  "parameters": {
+    "max_order": 30,
+    "timeout_seconds": 10,
+    "iterations": 3000
+  },
+  "known_counterexample": {
+    "format": "graph6",
+    "value": "Qt~~w?@?G@?F?R?V_MY?{OUGp_W"
+  }
+}

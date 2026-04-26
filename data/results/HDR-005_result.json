@@ -1,0 +1,11 @@
+{
+  "status": "no_counterexample_found",
+  "conjecture_id": "HDR-005",
+  "search": {
+    "method": "local_search",
+    "timeout_reached": true,
+    "time_seconds": 10.0044,
+    "iterations": 2112,
+    "best_score": -0.19999999999999996
+  }
+}

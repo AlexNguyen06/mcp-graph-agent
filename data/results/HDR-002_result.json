@@ -1,0 +1,21 @@
+{
+  "status": "counterexample_found",
+  "conjecture_id": "HDR-002",
+  "graph": {
+    "format": "graph6",
+    "value": "MuW~j]?ZDF}yVuYp_"
+  },
+  "verification": {
+    "hypotheses_satisfied": true,
+    "left_value": 7.571428571428571,
+    "right_value": 7.499770904925544,
+    "conclusion_satisfied": false,
+    "is_counterexample": true
+  },
+  "search": {
+    "method": "local_search",
+    "time_seconds": 0.0542,
+    "iterations": 88,
+    "best_score": 0.07165766650302707
+  }
+}
