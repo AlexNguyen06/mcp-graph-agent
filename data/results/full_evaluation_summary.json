@@ -1,0 +1,109 @@
+{
+  "metadata": {
+    "generated_conjectures": 5,
+    "total_conjectures_tested": 7,
+    "total_lean_files_checked": 1
+  },
+  "invalidation_experiments": [
+    {
+      "id": "ANNOR-001",
+      "source": "Annor 2026 - A Note on Inequalities for Three Domination Parameters",
+      "path": "data/conjectures/annor/ANNOR-001.json",
+      "graph_class": "connected_isolated_free",
+      "invalidation_status": "no_counterexample_found",
+      "evaluated": 200,
+      "best_gap": -1,
+      "best_violation_score": -1,
+      "known_counterexample_checked": false,
+      "known_counterexample_valid": null,
+      "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+    },
+    {
+      "id": "GEN-001",
+      "source": "generated",
+      "path": "data/conjectures/generated/GEN-001.json",
+      "graph_class": "connected",
+      "invalidation_status": "no_counterexample_found",
+      "evaluated": 200,
+      "best_gap": -1,
+      "best_violation_score": -1,
+      "known_counterexample_checked": false,
+      "known_counterexample_valid": null,
+      "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+    },
+    {
+      "id": "GEN-002",
+      "source": "generated",
+      "path": "data/conjectures/generated/GEN-002.json",
+      "graph_class": "connected",
+      "invalidation_status": "no_counterexample_found",
+      "evaluated": 200,
+      "best_gap": 0.0,
+      "best_violation_score": 0.0,
+      "known_counterexample_checked": false,
+      "known_counterexample_valid": null,
+      "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+    },
+    {
+      "id": "GEN-003",
+      "source": "generated",
+      "path": "data/conjectures/generated/GEN-003.json",
+      "graph_class": "connected",
+      "invalidation_status": "no_counterexample_found",
+      "evaluated": 200,
+      "best_gap": 0.0,
+      "best_violation_score": 0.0,
+      "known_counterexample_checked": false,
+      "known_counterexample_valid": null,
+      "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+    },
+    {
+      "id": "GEN-004",
+      "source": "generated",
+      "path": "data/conjectures/generated/GEN-004.json",
+      "graph_class": "connected",
+      "invalidation_status": "no_counterexample_found",
+      "evaluated": 200,
+      "best_gap": 0,
+      "best_violation_score": 0,
+      "known_counterexample_checked": false,
+      "known_counterexample_valid": null,
+      "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+    },
+    {
+      "id": "GEN-005",
+      "source": "generated",
+      "path": "data/conjectures/generated/GEN-005.json",
+      "graph_class": "connected",
+      "invalidation_status": "no_counterexample_found",
+      "evaluated": 200,
+      "best_gap": -0.21212121212121213,
+      "best_violation_score": -0.21212121212121213,
+      "known_counterexample_checked": false,
+      "known_counterexample_valid": null,
+      "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+    },
+    {
+      "id": "HDR-001",
+      "source": "HDR benchmark",
+      "path": "data/conjectures/hdr_false/HDR-001.json",
+      "graph_class": "connected",
+      "invalidation_status": "no_counterexample_found",
+      "evaluated": 200,
+      "best_gap": -0.06558119669468321,
+      "best_violation_score": -0.06558119669468321,
+      "known_counterexample_checked": true,
+      "known_counterexample_valid": true,
+      "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+    }
+  ],
+  "lean_proof_checks": [
+    {
+      "status": "lean_not_found",
+      "contains_sorry": false,
+      "file": "lean_proofs/T1_basic.lean",
+      "error": "[Errno 2] No such file or directory: 'lean'",
+      "message": "Lean executable was not found. Please install Lean 4 or configure PATH."
+    }
+  ]
+}

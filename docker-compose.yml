@@ -1,0 +1,44 @@
+services:
+  experiments:
+    build: .
+    command: python -m tools.run_experiments
+    volumes:
+      - .:/app
+
+  full-evaluation:
+    build: .
+    command: python -m tools.run_full_evaluation
+    volumes:
+      - .:/app
+
+  mcp-invalidator:
+    build: .
+    command: python -m mcp_servers.mcp_invalidator_server
+    volumes:
+      - .:/app
+    stdin_open: true
+    tty: true
+
+  mcp-graph-tools:
+    build: .
+    command: python -m mcp_servers.mcp_graph_tools_server
+    volumes:
+      - .:/app
+    stdin_open: true
+    tty: true
+
+  mcp-generator:
+    build: .
+    command: python -m mcp_servers.mcp_conjecture_generator_server
+    volumes:
+      - .:/app
+    stdin_open: true
+    tty: true
+
+  mcp-prover:
+    build: .
+    command: python -m mcp_servers.mcp_prover_server
+    volumes:
+      - .:/app
+    stdin_open: true
+    tty: true

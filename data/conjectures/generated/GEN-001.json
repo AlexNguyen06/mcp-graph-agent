@@ -1,0 +1,25 @@
+{
+  "id": "GEN-001",
+  "source": "generated",
+  "domain": "graph_theory",
+  "graph_class": "connected",
+  "description": "For every connected graph G, radius <= order - 1.",
+  "left_expression": "radius",
+  "relation": "<=",
+  "right_expression": "order - 1",
+  "invariants": [
+    "radius",
+    "order"
+  ],
+  "parameters": {
+    "min_order": 3,
+    "max_order": 12,
+    "timeout_seconds": 10,
+    "seed": 42
+  },
+  "known_counterexample": {
+    "format": "graph6",
+    "value": null
+  },
+  "status": "candidate"
+}

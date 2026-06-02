@@ -1,0 +1,86 @@
+[
+  {
+    "id": "ANNOR-001",
+    "source": "Annor 2026 - A Note on Inequalities for Three Domination Parameters",
+    "path": "data/conjectures/annor/ANNOR-001.json",
+    "graph_class": "connected_isolated_free",
+    "invalidation_status": "no_counterexample_found",
+    "evaluated": 200,
+    "best_gap": -1,
+    "known_counterexample_checked": false,
+    "known_counterexample_valid": null,
+    "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+  },
+  {
+    "id": "GEN-001",
+    "source": "generated",
+    "path": "data/conjectures/generated/GEN-001.json",
+    "graph_class": "connected",
+    "invalidation_status": "no_counterexample_found",
+    "evaluated": 200,
+    "best_gap": -1,
+    "known_counterexample_checked": false,
+    "known_counterexample_valid": null,
+    "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+  },
+  {
+    "id": "GEN-002",
+    "source": "generated",
+    "path": "data/conjectures/generated/GEN-002.json",
+    "graph_class": "connected",
+    "invalidation_status": "no_counterexample_found",
+    "evaluated": 200,
+    "best_gap": 0.0,
+    "known_counterexample_checked": false,
+    "known_counterexample_valid": null,
+    "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+  },
+  {
+    "id": "GEN-003",
+    "source": "generated",
+    "path": "data/conjectures/generated/GEN-003.json",
+    "graph_class": "connected",
+    "invalidation_status": "no_counterexample_found",
+    "evaluated": 200,
+    "best_gap": 0.0,
+    "known_counterexample_checked": false,
+    "known_counterexample_valid": null,
+    "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+  },
+  {
+    "id": "GEN-004",
+    "source": "generated",
+    "path": "data/conjectures/generated/GEN-004.json",
+    "graph_class": "connected",
+    "invalidation_status": "no_counterexample_found",
+    "evaluated": 200,
+    "best_gap": 0,
+    "known_counterexample_checked": false,
+    "known_counterexample_valid": null,
+    "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+  },
+  {
+    "id": "GEN-005",
+    "source": "generated",
+    "path": "data/conjectures/generated/GEN-005.json",
+    "graph_class": "connected",
+    "invalidation_status": "no_counterexample_found",
+    "evaluated": 200,
+    "best_gap": -0.21212121212121213,
+    "known_counterexample_checked": false,
+    "known_counterexample_valid": null,
+    "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+  },
+  {
+    "id": "HDR-001",
+    "source": "HDR benchmark",
+    "path": "data/conjectures/hdr_false/HDR-001.json",
+    "graph_class": "connected",
+    "invalidation_status": "no_counterexample_found",
+    "evaluated": 200,
+    "best_gap": -0.06558119669468321,
+    "known_counterexample_checked": true,
+    "known_counterexample_valid": true,
+    "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+  }
+]

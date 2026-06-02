@@ -1,0 +1,26 @@
+{
+    "id": "ANNOR-001",
+    "source": "Annor 2026 - A Note on Inequalities for Three Domination Parameters",
+    "domain": "graph_theory",
+    "graph_class": "connected_isolated_free",
+    "description": "For every connected isolated-free graph G, the total domination number is bounded below by floor((3 gamma + 2 gamma_c) / 6).",
+    "left_expression": "total_domination_number",
+    "relation": ">=",
+    "right_expression": "floor((3*domination_number + 2*connected_domination_number)/6)",
+    "invariants": [
+      "domination_number",
+      "total_domination_number",
+      "connected_domination_number"
+    ],
+    "parameters": {
+    "min_order": 2,
+    "max_order": 8,
+    "timeout_seconds": 20,
+    "seed": 42
+    },
+    "known_counterexample": {
+      "format": "graph6",
+      "value": null
+    },
+    "status": "unknown"
+  }

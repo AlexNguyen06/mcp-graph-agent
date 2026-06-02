@@ -1,0 +1,36 @@
+{
+  "conjecture_id": "ANNOR-001",
+  "status": "no_counterexample_found",
+  "source": "Annor 2026 - A Note on Inequalities for Three Domination Parameters",
+  "graph_class": "connected_isolated_free",
+  "search": {
+    "method": "random_search",
+    "evaluated": 200,
+    "time_seconds": 0.03
+  },
+  "best_result": {
+    "conjecture_id": "ANNOR-001",
+    "valid_graph_class": true,
+    "graph": {
+      "order": 7,
+      "size": 9,
+      "graph6": "FKvCG"
+    },
+    "invariants": {
+      "order": 7,
+      "size": 9,
+      "domination_number": 2,
+      "total_domination_number": 3,
+      "connected_domination_number": 3
+    },
+    "left_expression": "total_domination_number",
+    "left_value": 3,
+    "relation": ">=",
+    "right_expression": "floor((3*domination_number + 2*connected_domination_number)/6)",
+    "right_value": 2,
+    "conjecture_satisfied": true,
+    "is_counterexample": false
+  },
+  "best_gap": 1,
+  "message": "No counterexample was found within the search limits. This does not prove that the conjecture is true."
+}

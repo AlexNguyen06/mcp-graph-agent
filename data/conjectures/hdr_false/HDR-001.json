@@ -1,0 +1,25 @@
+{
+  "id": "HDR-001",
+  "source": "HDR benchmark",
+  "domain": "graph_theory",
+  "graph_class": "connected",
+  "description": "For every connected graph G, density is bounded above by a polynomial in the radius.",
+  "left_expression": "density",
+  "relation": "<=",
+  "right_expression": "65/98 + (18/29)*radius - (17/53)*radius^2 + (1/28)*radius^3",
+  "invariants": [
+    "density",
+    "radius"
+  ],
+  "parameters": {
+    "min_order": 6,
+    "max_order": 12,
+    "timeout_seconds": 20,
+    "seed": 42
+  },
+  "known_counterexample": {
+    "format": "graph6",
+    "value": "M~~~~zz|~^z~n~^~_"
+  },
+  "status": "false"
+}

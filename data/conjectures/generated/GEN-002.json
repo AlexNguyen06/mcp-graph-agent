@@ -1,0 +1,24 @@
+{
+  "id": "GEN-002",
+  "source": "generated",
+  "domain": "graph_theory",
+  "graph_class": "connected",
+  "description": "For every connected graph G, density <= 1.",
+  "left_expression": "density",
+  "relation": "<=",
+  "right_expression": "1",
+  "invariants": [
+    "density"
+  ],
+  "parameters": {
+    "min_order": 3,
+    "max_order": 12,
+    "timeout_seconds": 10,
+    "seed": 42
+  },
+  "known_counterexample": {
+    "format": "graph6",
+    "value": null
+  },
+  "status": "candidate"
+}
