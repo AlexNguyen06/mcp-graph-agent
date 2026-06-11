@@ -1,0 +1,25 @@
+{
+  "id": "HDR-005",
+  "source": "HDR benchmark",
+  "domain": "graph_theory",
+  "graph_class": "connected",
+  "description": "For every connected graph G, radius is at least 4/5 plus one fifth of the domination number.",
+  "left_expression": "rad",
+  "relation": ">=",
+  "right_expression": "4/5 + (1/5)*gamma",
+  "invariants": [
+    "rad",
+    "gamma"
+  ],
+  "parameters": {
+    "min_order": 6,
+    "max_order": 14,
+    "timeout_seconds": 60,
+    "seed": 45
+  },
+  "known_counterexample": {
+    "format": "graph6",
+    "value": "M???A?_C?O?_?__^_"
+  },
+  "status": "false"
+}

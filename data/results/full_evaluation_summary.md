@@ -2,21 +2,23 @@
 
 ## 1. Conjecture Invalidation Experiments
 
-| ID | Source | Status | Evaluated | Best violation score | Known CE checked | Known CE valid | Interpretation |
-|---|---|---:|---:|---:|---|---|---|
-| ANNOR-001 | Annor 2026 - A Note on Inequalities for Three Domination Parameters | no_counterexample_found | 200 | -1 | false | null | not refuted by limited search |
-| GEN-001 | generated | no_counterexample_found | 200 | -1 | false | null | not refuted by limited search |
-| GEN-002 | generated | no_counterexample_found | 200 | 0 | false | null | not refuted by limited search |
-| GEN-003 | generated | no_counterexample_found | 200 | 0 | false | null | not refuted by limited search |
-| GEN-004 | generated | no_counterexample_found | 200 | 0 | false | null | not refuted by limited search |
-| GEN-005 | generated | no_counterexample_found | 200 | -0.21212 | false | null | not refuted by limited search |
-| HDR-001 | HDR benchmark | no_counterexample_found | 200 | -0.06558 | true | true | refuted by verified known counterexample |
+| ID | Statut | Méthode | Temps (s) | Ordre du graphe | Commentaire |
+|---|---|---|---:|---:|---|
+| HDR-001 | no_counterexample_found | random_search | 0.056 | 7 | non réfutée par recherche limitée; contre-exemple connu vérifié |
+| HDR-001 | counterexample_found | local_search | 0.002 | 26 | contre-exemple vérifié indépendamment |
+| HDR-003 | no_counterexample_found | random_search | 0.573 | 8 | non réfutée par recherche limitée; contre-exemple connu vérifié |
+| HDR-003 | no_counterexample_found | local_search | 3.003 | 10 | non réfutée par recherche limitée; contre-exemple connu vérifié |
+| HDR-005 | no_counterexample_found | random_search | 0.034 | 7 | non réfutée par recherche limitée; contre-exemple connu vérifié |
+| HDR-005 | no_counterexample_found | local_search | 3.001 | 9 | non réfutée par recherche limitée; contre-exemple connu vérifié |
+| HDR-014 | no_counterexample_found | random_search | 0.553 | 10 | non réfutée par recherche limitée; contre-exemple connu vérifié |
+| HDR-014 | no_counterexample_found | local_search | 3 | 14 | non réfutée par recherche limitée; contre-exemple connu vérifié |
 
 ## 2. Lean Proof Checks
 
-| File | Status | Contains sorry | Interpretation |
+| ID | Énoncé | Statut Lean | Difficulté rencontrée |
 |---|---|---|---|
-| lean_proofs/T1_basic.lean | lean_not_found | false | Lean is not installed or not available in PATH |
+| T1 | lean_proofs/T1_degree_sum.lean | lean_not_found | Lean is not installed or not available in PATH |
+| T2 | lean_proofs/T2_even_odd_vertices.lean | lean_not_found | Lean is not installed or not available in PATH |
 
 ## 3. Interpretation
 

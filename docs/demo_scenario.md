@@ -2,82 +2,65 @@
 
 ## 1. Objective
 
-This project implements a local LLM agent that orchestrates graph conjecture tools. The LLM does not prove mathematical truth by itself. It calls independent tools:
+The demo shows that the LLM agent orchestrates independent graph tools through MCP. It does not prove or refute conjectures by itself.
 
-- an invalidator that searches for counterexamples;
-- a verifier that checks whether a graph satisfies the hypotheses and violates the conjecture;
-- an experiment runner that produces reproducible summaries.
-
-## 2. Start the local agent
+## 2. Start the Agent
 
 ```bash
 cd /Users/nguyenquynh/mcp-graph-agent
-python agent/agent_files.py
+python agent/agent_files.py --model gemma3:12b
 ```
 
-## 3. Test ANNOR-001
+Any Ollama model with tool-calling support can be selected with `--model`. Use `--direct` only for debugging the old direct-import path.
+
+## 3. Test HDR-001 With Local Search
 
 Prompt:
 
 ```text
-Utilise l’outil invalidate_from_path avec le chemin data/conjectures/annor/ANNOR-001.json pour tester la conjecture. /no_think
+Utilise l’outil invalidator__invalidate_from_path avec conjecture_path data/conjectures/hdr_false/HDR-001.json et method local_search.
 ```
 
 Expected interpretation:
 
-- no_counterexample_found
-- 200 graphs evaluated
-- this is not a proof
-- the conjecture is not refuted by this limited search
+- `counterexample_found`
+- the result contains a `graph6` counterexample
+- the independent verifier confirms `valid_graph_class = True` and `is_counterexample = True`
 
-## 4. Test HDR-001 with random invalidation
+## 4. Compare Random Search
 
 Prompt:
 
 ```text
-Utilise l’outil invalidate_from_path avec le chemin data/conjectures/hdr_false/HDR-001.json pour tester la conjecture HDR-001. /no_think
+Utilise l’outil invalidator__invalidate_from_path avec conjecture_path data/conjectures/hdr_false/HDR-001.json et method random_search.
 ```
 
 Expected interpretation:
 
-- random search may not find a counterexample
-- best_violation_score <= 0 means the best tested graph still satisfies the conjecture
-- no_counterexample_found is not a mathematical proof
+- random search is a baseline and may fail within limited time
+- `no_counterexample_found` is not a mathematical proof
 
-## 5. Verify known HDR-001 counterexample
-
-Prompt:
-
-```text
-Utilise l’outil verify_counterexample_from_path avec le chemin data/conjectures/hdr_false/HDR-001.json pour vérifier le contre-exemple connu. /no_think
-```
-
-Expected interpretation:
-
-- valid_graph_class = True
-- conjecture_satisfied = False
-- is_counterexample = True
-- therefore HDR-001 is refuted by the known graph6 counterexample
-
-## 6. Run experiments
+## 5. Verify Known Benchmark Counterexamples
 
 ```bash
-python -m tools.run_experiments
+python -m tools.verify_benchmark
 ```
 
-Expected output:
+The script checks `HDR-001`, `HDR-003`, `HDR-005`, and `HDR-014` by rebuilding each graph from `graph6`.
 
-- experiments_summary.json is created
-- experiments_summary.md is created if markdown export is enabled
-- table contains ANNOR-001 and HDR-001
+## 6. Run Full Evaluation
 
-## 7. Key explanation for oral presentation
+```bash
+python -m tools.run_full_evaluation
+```
 
-L’agent LLM sert d’orchestrateur. Il ne décide pas seul si une conjecture est vraie ou fausse. Il appelle des outils indépendants. L’invalidateur cherche automatiquement des graphes candidats. Le vérificateur recalcule les invariants du graphe et vérifie les hypothèses et l’inégalité. Si un graphe satisfait les hypothèses mais viole l’inégalité, alors c’est un contre-exemple. Si la recherche ne trouve rien, cela ne prouve pas la conjecture.
+Expected outputs:
 
-## 8. Current results
+- `data/results/full_evaluation_summary.json`
+- `data/results/full_evaluation_summary.md`
+- one false-conjecture row per method (`random_search`, `local_search`)
+- one Lean table row per file in `lean_proofs/`
 
-| Conjecture | Search result | Known counterexample verified | Interpretation |
-|---|---|---|---|
-| ANNOR-001 | no_counterexample_found | no known counterexample | not refuted by limited search |
-| HDR-001 | no_counterexample_found by random search | true | refuted by verified graph6 counterexample |
+## 7. Oral Presentation Point
+
+L’agent LLM sert d’orchestrateur. L’invalidateur propose des graphes candidats, le vérificateur recalcule les invariants et confirme les contre-exemples, et Lean compile les preuves formelles. Un échec de recherche ne prouve jamais qu’une conjecture est vraie.

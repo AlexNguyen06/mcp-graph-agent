@@ -1,4 +1,5 @@
 import math
+import itertools
 import networkx as nx
 
 from tools.annor_invariants import (
@@ -9,16 +10,68 @@ from tools.annor_invariants import (
 )
 
 
-def compute_invariants(G: nx.Graph, required_invariants=None) -> dict:
+INVARIANT_ALIASES = {
+    "n": "order",
+    "m": "size",
+    "d": "density",
+    "rad": "radius",
+    "diam": "diameter",
+    "delta": "min_degree",
+    "Delta": "max_degree",
+    "avg": "avg_degree",
+    "t": "triangles",
+    "omega": "clique_number",
+    "alpha": "independence_number",
+    "tau": "vertex_cover_number",
+    "mu": "matching_number",
+    "kappa": "node_connectivity",
+    "kappa_prime": "edge_connectivity",
+    "gamma": "domination_number",
+    "gamma_t": "total_domination_number",
+    "gamma_c": "connected_domination_number",
+}
+
+
+def _normalize_required(required_invariants) -> set[str]:
     required = set(required_invariants or [
         "domination_number",
         "total_domination_number",
-        "connected_domination_number"
+        "connected_domination_number",
     ])
+    return {INVARIANT_ALIASES.get(name, name) for name in required}
+
+
+def clique_number(G: nx.Graph) -> int:
+    if G.number_of_nodes() == 0:
+        return 0
+    return max((len(clique) for clique in nx.find_cliques(G)), default=0)
+
+
+def independence_number(G: nx.Graph) -> int:
+    return clique_number(nx.complement(G))
+
+
+def is_claw_free(G: nx.Graph) -> bool:
+    for center in G.nodes:
+        neighbors = list(G.neighbors(center))
+        if len(neighbors) < 3:
+            continue
+        for triple in itertools.combinations(neighbors, 3):
+            induced = G.subgraph(triple)
+            if induced.number_of_edges() == 0:
+                return False
+    return True
+
+
+def compute_invariants(G: nx.Graph, required_invariants=None) -> dict:
+    required = _normalize_required(required_invariants)
+    order = G.number_of_nodes()
+    size = G.number_of_edges()
+    degrees = dict(G.degree())
 
     values = {
-        "order": G.number_of_nodes(),
-        "size": G.number_of_edges()
+        "order": order,
+        "size": size,
     }
 
     if "domination_number" in required:
@@ -36,6 +89,44 @@ def compute_invariants(G: nx.Graph, required_invariants=None) -> dict:
     if "density" in required:
         values["density"] = nx.density(G)
 
+    if "diameter" in required:
+        values["diameter"] = nx.diameter(G)
+
+    if "min_degree" in required:
+        values["min_degree"] = min(degrees.values(), default=0)
+
+    if "max_degree" in required:
+        values["max_degree"] = max(degrees.values(), default=0)
+
+    if "avg_degree" in required:
+        values["avg_degree"] = (2 * size / order) if order else 0
+
+    if "triangles" in required:
+        values["triangles"] = sum(nx.triangles(G).values()) // 3
+
+    if "clique_number" in required:
+        values["clique_number"] = clique_number(G)
+
+    if "independence_number" in required:
+        values["independence_number"] = independence_number(G)
+
+    if "vertex_cover_number" in required:
+        alpha = values.get("independence_number", independence_number(G))
+        values["vertex_cover_number"] = order - alpha
+
+    if "matching_number" in required:
+        values["matching_number"] = len(nx.max_weight_matching(G, maxcardinality=True))
+
+    if "node_connectivity" in required:
+        values["node_connectivity"] = nx.node_connectivity(G)
+
+    if "edge_connectivity" in required:
+        values["edge_connectivity"] = nx.edge_connectivity(G)
+
+    for short_name, long_name in INVARIANT_ALIASES.items():
+        if long_name in values:
+            values[short_name] = values[long_name]
+
     return values
 
 
@@ -45,6 +136,18 @@ def check_graph_class(G: nx.Graph, graph_class: str) -> bool:
 
     if graph_class == "connected":
         return nx.is_connected(G)
+
+    if graph_class == "tree":
+        return nx.is_tree(G)
+
+    if graph_class == "bipartite":
+        return nx.is_bipartite(G)
+
+    if graph_class == "planar":
+        return nx.check_planarity(G)[0]
+
+    if graph_class == "claw_free":
+        return is_claw_free(G)
 
     raise ValueError(f"Unsupported graph class: {graph_class}")
 

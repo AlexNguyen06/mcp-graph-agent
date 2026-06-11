@@ -1,0 +1,25 @@
+{
+  "id": "HDR-003",
+  "source": "HDR benchmark",
+  "domain": "graph_theory",
+  "graph_class": "connected",
+  "description": "For every connected graph G, node connectivity is at least minimum degree minus 3.",
+  "left_expression": "kappa",
+  "relation": ">=",
+  "right_expression": "-3 + delta",
+  "invariants": [
+    "kappa",
+    "delta"
+  ],
+  "parameters": {
+    "min_order": 6,
+    "max_order": 30,
+    "timeout_seconds": 60,
+    "seed": 43
+  },
+  "known_counterexample": {
+    "format": "graph6",
+    "value": "Qt~~w?@?G@?F?R?V_MY?{OUGp_W"
+  },
+  "status": "false"
+}

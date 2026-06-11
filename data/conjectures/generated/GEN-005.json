@@ -20,5 +20,9 @@
     "format": "graph6",
     "value": null
   },
-  "status": "candidate"
+  "status": "trivial",
+  "trivial_filter": {
+    "is_trivial": true,
+    "reason": "density is always non-negative"
+  }
 }

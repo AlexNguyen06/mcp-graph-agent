@@ -11,6 +11,12 @@ services:
     volumes:
       - .:/app
 
+  verify-benchmark:
+    build: .
+    command: python -m tools.verify_benchmark
+    volumes:
+      - .:/app
+
   mcp-invalidator:
     build: .
     command: python -m mcp_servers.mcp_invalidator_server
@@ -36,7 +42,9 @@ services:
     tty: true
 
   mcp-prover:
-    build: .
+    build:
+      context: .
+      dockerfile: mcp-prover/Dockerfile
     command: python -m mcp_servers.mcp_prover_server
     volumes:
       - .:/app

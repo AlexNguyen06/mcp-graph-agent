@@ -1,5 +1,6 @@
 import json
 import sys
+import time
 from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
@@ -10,6 +11,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from tools.invalidator_tool import invalidate_conjecture
+from tools.logging_utils import log_call
 from tools.verify_counterexample_tool import (
     verify_counterexample_from_path as verify_counterexample_impl,
 )
@@ -19,12 +21,14 @@ mcp = FastMCP("mcp-invalidator")
 
 
 @mcp.tool()
-def invalidate_from_path(conjecture_path: str) -> str:
+def invalidate_from_path(conjecture_path: str, method: str = "local_search") -> str:
     """
     Search for a counterexample to a conjecture stored as a project-relative JSON file.
     Example: data/conjectures/annor/ANNOR-001.json
     """
-    result = invalidate_conjecture(conjecture_path)
+    start = time.time()
+    result = invalidate_conjecture(conjecture_path, method=method)
+    log_call("mcp-invalidator", "invalidate_from_path", {"conjecture_path": conjecture_path, "method": method}, result.get("status", ""), time.time() - start)
     return json.dumps(result, indent=2, ensure_ascii=False)
 
 
@@ -34,7 +38,9 @@ def verify_counterexample_from_path(conjecture_path: str) -> str:
     Verify the known graph6 counterexample stored in a project-relative conjecture JSON file.
     Example: data/conjectures/hdr_false/HDR-001.json
     """
+    start = time.time()
     result = verify_counterexample_impl(conjecture_path)
+    log_call("mcp-invalidator", "verify_counterexample_from_path", {"conjecture_path": conjecture_path}, str(result.get("is_counterexample")), time.time() - start)
     return json.dumps(result, indent=2, ensure_ascii=False)
 
 

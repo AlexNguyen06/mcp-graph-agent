@@ -1,9 +1,13 @@
 from pathlib import Path
 from typing import Any, Callable
+import argparse
 import ast
+import asyncio
 import json
 import select
 import sys
+import time
+from contextlib import asynccontextmanager
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -11,6 +15,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from tools.invalidator_tool import invalidate_conjecture
 from tools.verify_counterexample_tool import verify_counterexample_from_path
+from tools.logging_utils import log_call
 
 WORKSPACE = PROJECT_ROOT / "workspace"
 WORKSPACE.mkdir(parents=True, exist_ok=True)
@@ -118,6 +123,51 @@ AVAILABLE_TOOLS: dict[str, Callable[..., str]] = {
     "tool_verify_counterexample_from_path": verify_counterexample_from_path_tool
 }
 
+LOCAL_AGENT_TOOLS: dict[str, Callable[..., str]] = {
+    "list_files": list_files,
+    "read_file": read_file,
+    "write_file": write_file,
+}
+
+LOCAL_TOOL_SCHEMAS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "list_files",
+            "description": "List files in the local agent workspace.",
+            "parameters": {"type": "object", "properties": {}},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "read_file",
+            "description": "Read a text file from the local agent workspace.",
+            "parameters": {
+                "type": "object",
+                "properties": {"path": {"type": "string"}},
+                "required": ["path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "write_file",
+            "description": "Write a text file to the local agent workspace.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string"},
+                    "content": {"type": "string"},
+                    "overwrite": {"type": "boolean"},
+                },
+                "required": ["path", "content"],
+            },
+        },
+    },
+]
+
 CONJECTURE_PATH_TOOLS = {
     "invalidate_from_path",
     "verify_counterexample_from_path"
@@ -148,15 +198,12 @@ Use this tool when the user wants to verify a known graph6 counterexample stored
 The path must be relative to the project root.
 Example: data/conjectures/hdr_false/HDR-001.json
 
-/no_think
 Tu es un agent local de programmation.
-Tu peux utiliser les outils list_files, read_file, write_file, invalidate_annor, invalidate_from_path et verify_counterexample_from_path.
+Tu peux utiliser les outils de fichiers locaux et les outils MCP disponibles.
 Tu n’as pas accès directement au disque.
 Pour créer un fichier, tu dois appeler write_file.
 Pour lire un fichier, tu dois appeler read_file.
 Pour lister les fichiers, tu dois appeler list_files.
-list_files ne prend aucun argument path.
-Le marqueur /no_think n’est jamais un argument d’un outil et ne doit jamais être utilisé comme conjecture_path.
 Si l’utilisateur demande plusieurs étapes, continue les étapes demandées après chaque appel d’outil; ne t’arrête pas après list_files.
 Utilise uniquement des chemins relatifs.
 N’affirme jamais qu’un fichier a été écrit avant d’avoir reçu le résultat de l’outil.
@@ -176,7 +223,6 @@ def validate_conjecture_path_argument(args: dict[str, Any]) -> None:
 
     if (
         not isinstance(conjecture_path, str)
-        or conjecture_path == "/no_think"
         or not conjecture_path.endswith(".json")
         or conjecture_path.startswith("/")
     ):
@@ -253,9 +299,17 @@ def summarize_tool_result(tool_result: Any) -> str:
     return "\n".join(lines)
 
 
-def run_agent(user_request: str, model: str = "qwen3:8b", max_steps: int = 5) -> str:
-    from ollama import chat
+def _direct_tool_schemas() -> list[Callable[..., str]]:
+    return list(AVAILABLE_TOOLS.values())
 
+
+async def run_agent_async(
+    user_request: str,
+    model: str = "gemma3:12b",
+    max_steps: int = 5,
+    direct: bool = False,
+) -> str:
+    from ollama import chat
     last_tool_result = None
 
     messages = [
@@ -263,75 +317,82 @@ def run_agent(user_request: str, model: str = "qwen3:8b", max_steps: int = 5) ->
         {"role": "user", "content": user_request},
     ]
 
-    for step in range(max_steps):
-        print(f"[debug] étape {step + 1}: appel du modèle...")
+    async with _optional_mcp_client(not direct) as mcp_client:
+        tools = _direct_tool_schemas() if direct else LOCAL_TOOL_SCHEMAS + mcp_client.ollama_tools()
 
-        response = chat(
-            model=model,
-            messages=messages,
-            tools=list(AVAILABLE_TOOLS.values()),
-            think=False,
-            stream=False,
-            options={
-                "temperature": 0,
-                "num_predict": 500,
-                "num_ctx": 2048,
-            },
-        )
+        for step in range(max_steps):
+            print(f"[debug] étape {step + 1}: appel du modèle...")
 
-        assistant_message = response.message
-        messages.append(assistant_message)
+            response = chat(
+                model=model,
+                messages=messages,
+                tools=tools,
+                stream=False,
+                options={
+                    "temperature": 0,
+                    "num_predict": 500,
+                    "num_ctx": 2048,
+                },
+            )
 
-        tool_calls = assistant_message.tool_calls or []
+            assistant_message = response.message
+            messages.append(assistant_message)
 
-        if not tool_calls:
-            if assistant_message.content:
-                return assistant_message.content
-            if last_tool_result is not None:
-                return summarize_tool_result(last_tool_result)
-            return ""
+            tool_calls = assistant_message.tool_calls or []
 
-        for call in tool_calls:
-            tool_name = call.function.name
-            raw_args = call.function.arguments
+            if not tool_calls:
+                if assistant_message.content:
+                    return assistant_message.content
+                if last_tool_result is not None:
+                    return summarize_tool_result(last_tool_result)
+                return ""
 
-            print(f"[tool] {tool_name}({raw_args})")
+            for call in tool_calls:
+                tool_name = call.function.name
+                raw_args = call.function.arguments
 
-            if tool_name not in AVAILABLE_TOOLS and tool_name.startswith("tool_"):
-                normalized_tool_name = tool_name.removeprefix("tool_")
-            else:
-                normalized_tool_name = tool_name
+                print(f"[tool] {tool_name}({raw_args})")
+                start = time.time()
 
-            if normalized_tool_name not in AVAILABLE_TOOLS:
-                tool_result = f"Erreur : outil inconnu {tool_name}"
-            else:
+                if tool_name not in AVAILABLE_TOOLS and tool_name.startswith("tool_"):
+                    normalized_tool_name = tool_name.removeprefix("tool_")
+                else:
+                    normalized_tool_name = tool_name
+
                 try:
-                    if normalized_tool_name in CONJECTURE_PATH_TOOLS and isinstance(raw_args, str):
-                        raw_args_str = raw_args.strip()
-                        if raw_args_str and not raw_args_str.startswith("{"):
-                            args = {"conjecture_path": raw_args_str}
-                        else:
-                            args = normalize_arguments(raw_args)
-                    else:
-                        args = normalize_arguments(raw_args)
-
+                    args = normalize_arguments(raw_args)
                     if "path" in args and "conjecture_path" not in args:
                         args["conjecture_path"] = args["path"]
-                    if normalized_tool_name in CONJECTURE_PATH_TOOLS:
-                        validate_conjecture_path_argument(args)
-                    tool_result = AVAILABLE_TOOLS[normalized_tool_name](**args)
+
+                    if direct:
+                        if normalized_tool_name in CONJECTURE_PATH_TOOLS:
+                            validate_conjecture_path_argument(args)
+                        tool_result = AVAILABLE_TOOLS[normalized_tool_name](**args)
+                    elif normalized_tool_name in LOCAL_AGENT_TOOLS:
+                        tool_result = LOCAL_AGENT_TOOLS[normalized_tool_name](**args)
+                    elif mcp_client is not None and normalized_tool_name in mcp_client.tools:
+                        tool_result = await mcp_client.call_agent_tool(normalized_tool_name, args)
+                    else:
+                        tool_result = f"Erreur : outil inconnu {tool_name}"
                 except Exception as exc:
                     tool_result = f"Erreur pendant {normalized_tool_name} : {exc}"
 
-            last_tool_result = tool_result
+                log_call(
+                    "agent",
+                    normalized_tool_name,
+                    args if "args" in locals() else {},
+                    str(tool_result)[:500],
+                    time.time() - start,
+                )
+                last_tool_result = tool_result
 
-            print(f"[result] {tool_result}")
+                print(f"[result] {tool_result}")
 
-            messages.append({
-                "role": "tool",
-                "tool_name": normalized_tool_name,
-                "content": str(tool_result),
-            })
+                messages.append({
+                    "role": "tool",
+                    "tool_name": normalized_tool_name,
+                    "content": str(tool_result),
+                })
 
     if last_tool_result is not None:
         return summarize_tool_result(last_tool_result)
@@ -339,10 +400,14 @@ def run_agent(user_request: str, model: str = "qwen3:8b", max_steps: int = 5) ->
     return "Arrêt : trop d'étapes."
 
 
+def run_agent(user_request: str, model: str = "gemma3:12b", max_steps: int = 5, direct: bool = False) -> str:
+    return asyncio.run(run_agent_async(user_request, model=model, max_steps=max_steps, direct=direct))
+
+
 def collect_pasted_prompt(first_line: str) -> str:
     lines = [first_line]
 
-    while "/no_think" not in "\n".join(lines):
+    while True:
         readable, _, _ = select.select([sys.stdin], [], [], 0.05)
         if not readable:
             break
@@ -357,7 +422,14 @@ def collect_pasted_prompt(first_line: str) -> str:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", default="gemma3:12b")
+    parser.add_argument("--direct", action="store_true")
+    args = parser.parse_args()
+
     print(f"Workspace autorisé : {WORKSPACE}")
+    print(f"Modèle : {args.model}")
+    print(f"Mode outils : {'direct' if args.direct else 'MCP'}")
     print("Tape exit pour quitter.")
     print()
 
@@ -370,9 +442,18 @@ def main() -> None:
         if not prompt:
             continue
 
-        answer = run_agent(prompt)
+        answer = run_agent(prompt, model=args.model, direct=args.direct)
         print("\n" + answer + "\n")
 
 
 if __name__ == "__main__":
     main()
+@asynccontextmanager
+async def _optional_mcp_client(enabled: bool):
+    if not enabled:
+        yield None
+        return
+    from agent.mcp_client import MCPGraphClient
+
+    async with MCPGraphClient() as client:
+        yield client

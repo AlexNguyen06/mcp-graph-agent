@@ -1,37 +1,26 @@
 # MCP Graph Agent
 
-## Objective
-
-This project implements a local LLM agent that orchestrates graph-theory tools through a tool-calling architecture. The LLM is not considered a mathematical source of truth. It only coordinates independent tools that search for counterexamples and verify results.
+Local graph-theory agent for the M1 internship project. The LLM is only an orchestrator: it must never decide mathematical truth. Counterexamples are accepted only after the independent verifier rebuilds the graph from `graph6` and recomputes the hypotheses, invariants, and inequality. Proofs are accepted only by Lean files that compile without `sorry`.
 
 ## Architecture
 
 ```text
-User prompt
-→ Local LLM agent
-→ Tool call
-→ Invalidator / Verifier
-→ JSON result
-→ Agent explanation
+Ollama agent
+-> MCP client
+-> MCP servers
+-> independent tools: invalidator, verifier, generator, Lean prover
+-> JSON result
 ```
 
 Main components:
 
-- `agent/agent_files.py`: local LLM agent using Ollama tool calling
-- `tools/invalidator_tool.py`: launches the counterexample search
-- `tools/verifier.py`: independently checks hypotheses, invariants and inequalities
-- `tools/search_annor.py`: random/local search engine for graph candidates
-- `tools/verify_counterexample_tool.py`: verifies known graph6 counterexamples
-- `tools/run_experiments.py`: runs experiments and exports summary results
-- `data/conjectures/`: stores conjectures in JSON format
-- `data/results/`: stores experiment outputs
-
-## Supported conjectures
-
-| ID | Source | Status |
-|---|---|---|
-| ANNOR-001 | Annor 2026 domination conjecture | no counterexample found by limited search |
-| HDR-001 | HDR benchmark false conjecture | known graph6 counterexample verified |
+- `agent/agent_files.py`: Ollama tool-calling agent. MCP mode is the default; `--direct` keeps the old direct-import mode for debugging.
+- `agent/mcp_client.py`: stdio MCP client that launches and lists tools from the four MCP servers.
+- `mcp_servers/`: invalidator, graph tools, conjecture generator, and prover servers.
+- `tools/search_annor.py`: `random_search` and `local_search` counterexample search.
+- `tools/verifier.py`: LLM-free independent verifier and invariant computation.
+- `lean_proofs/`: Lean 4 + Mathlib formalizations for T1 and T2.
+- `logs/`: JSON-lines call journal, with generated `*.jsonl` files ignored by Git.
 
 ## Installation
 
@@ -40,131 +29,103 @@ cd /Users/nguyenquynh/mcp-graph-agent
 pip install -r requirements.txt
 ```
 
-Ollama must be installed, and a local model such as `qwen3:8b` must be available.
-
-## Run the local agent
+Ollama must be installed. The default model is `gemma3:12b` as required by the subject, but any Ollama model with tool-calling support can be used:
 
 ```bash
-python agent/agent_files.py
+python agent/agent_files.py --model gemma3:12b
+python agent/agent_files.py --model llama3.1:8b
+python agent/agent_files.py --direct --model gemma3:12b
 ```
 
-## Example prompts
-
-1. Test ANNOR-001:
+## Example Prompts
 
 ```text
-Utilise l’outil invalidate_from_path avec le chemin data/conjectures/annor/ANNOR-001.json pour tester la conjecture. /no_think
+Utilise l’outil invalidator__invalidate_from_path avec le chemin data/conjectures/hdr_false/HDR-001.json et method local_search pour tester HDR-001.
 ```
-
-2. Test HDR-001 with random invalidation:
 
 ```text
-Utilise l’outil invalidate_from_path avec le chemin data/conjectures/hdr_false/HDR-001.json pour tester la conjecture HDR-001. /no_think
+Utilise l’outil invalidator__verify_counterexample_from_path avec le chemin data/conjectures/hdr_false/HDR-014.json pour vérifier le contre-exemple connu.
 ```
 
-3. Verify known HDR-001 counterexample:
+`no_counterexample_found` is never a proof. It only means the configured search did not find a violating graph.
 
-```text
-Utilise l’outil verify_counterexample_from_path avec le chemin data/conjectures/hdr_false/HDR-001.json pour vérifier le contre-exemple connu. /no_think
-```
+## Invalidation
 
-## Run experiments
+`tools.search_annor` supports:
+
+- `method="local_search"` by default, with connected graph moves: add edge, remove edge when still connected and isolate-free, rewire edge, add vertex, and remove low-degree vertex.
+- `method="random_search"` for baseline random connected `G(n,p)` sampling.
+
+Results include `method`, `time_seconds`, `iterations`, `best_violation_score`, and `counterexample_graph6` when a verified counterexample is found.
+
+## Verifier
+
+The verifier supports HDR invariants including `order`, `size`, `density`, `radius`, `diameter`, `min_degree`, `max_degree`, `avg_degree`, `triangles`, `clique_number`, `independence_number`, `vertex_cover_number`, `matching_number`, `node_connectivity`, `edge_connectivity`, `domination_number`, `total_domination_number`, and `connected_domination_number`.
+
+Expression contexts include long names and short names such as `n`, `m`, `d`, `rad`, `diam`, `delta`, `Delta`, `avg`, `t`, `omega`, `alpha`, `tau`, `mu`, `kappa`, `kappa_prime`, and `gamma`.
+
+Graph classes include `connected`, `connected_isolated_free`, `tree`, `bipartite`, `planar`, and `claw_free`.
+
+## HDR Benchmark
+
+Verified false conjectures live in `data/conjectures/hdr_false/`: `HDR-001`, `HDR-003`, `HDR-005`, and `HDR-014`.
 
 ```bash
-python -m tools.run_experiments
+python -m tools.verify_benchmark
+python -m tests.test_benchmark_known_counterexamples
+python -m tests.test_local_search_hdr001
 ```
 
-This creates:
+`tools.verify_benchmark` exits non-zero if any known `graph6` counterexample fails independent verification.
 
-```text
-data/results/experiments_summary.json
-data/results/experiments_summary.md
-```
+## Lean
 
-## Test commands
+The toy proof was removed. Current files:
+
+- `lean_proofs/T1_degree_sum.lean`: finite simple graph degree-sum formula.
+- `lean_proofs/T2_even_odd_vertices.lean`: the number of odd-degree vertices is even.
+
+Local build:
 
 ```bash
-python -m tests.test_mcp_servers_import
-python -m tests.test_conjecture_generator
+elan toolchain install stable
+lake update
+lake exe cache get
+lake build
 python -m tests.test_lean_prover
-python -m tools.run_experiments
 ```
+
+Without Lean on `PATH`, the prover returns `lean_not_found`.
+
+## Full Evaluation
+
+```bash
+python -m tools.run_full_evaluation
+```
+
+The Markdown table for false conjectures uses the required columns: `ID`, `Statut`, `Méthode`, `Temps (s)`, `Ordre du graphe`, `Commentaire`. Lean files are reported separately with `ID`, `Énoncé`, `Statut Lean`, and `Difficulté rencontrée`.
 
 ## Docker
 
 ```bash
 docker compose build
-docker compose run --rm experiments
+docker compose run --rm verify-benchmark
+docker compose run --rm full-evaluation
 docker compose run --rm mcp-invalidator
 docker compose run --rm mcp-graph-tools
 docker compose run --rm mcp-generator
 docker compose run --rm mcp-prover
 ```
 
-- `experiments` runs the full experiment summary.
-- MCP services stay open because they wait for stdio input.
-- The prover may return `lean_not_found` if Lean 4 is not installed inside the container.
+`mcp-prover` uses `mcp-prover/Dockerfile`, which installs elan, Lean 4, and fetches the Mathlib cache. This image is heavier than the Python-only services, but it lets the prover return real `proved` or `failed` statuses inside Docker instead of `lean_not_found`.
 
-## Full evaluation
+## Tests
 
 ```bash
-python -m tools.run_full_evaluation
-docker compose run --rm full-evaluation
-```
-
-The full evaluation generates candidate conjectures, runs invalidation experiments, checks Lean proof files, and writes:
-
-```text
-data/results/full_evaluation_summary.json
-data/results/full_evaluation_summary.md
-```
-
-## MCP Servers
-
-- `mcp_servers/mcp_invalidator_server.py` exposes invalidation and known counterexample verification.
-- `mcp_servers/mcp_graph_tools_server.py` exposes graph6 parsing and invariant computation.
-- These servers separate the LLM agent from mathematical tools.
-
-## MCP Conjecture Generator
-
-The generator creates simple candidate conjectures in the common JSON format. These candidates can then be tested by the invalidator. This demonstrates the generation → invalidation workflow required by the project.
-
-```bash
+python -m tests.test_mcp_servers_import
 python -m tests.test_conjecture_generator
-python -m mcp_servers.mcp_conjecture_generator_server
-```
-
-The MCP server stays open waiting for stdio input, which is normal.
-
-## MCP Prover Server
-
-The prover server checks Lean 4 files. It does not accept proofs containing `sorry` as complete proofs. It returns structured JSON with status `proved`, `failed`, `incomplete_proof`, or `lean_not_found`.
-
-```bash
-python -m tools.lean_prover
 python -m tests.test_lean_prover
-python -m mcp_servers.mcp_prover_server
+python -m tools.verify_benchmark
+python -m tests.test_local_search_hdr001
+python -m tools.run_full_evaluation
 ```
-
-Lean 4 must be installed separately. If Lean 4 is not installed, the tool returns `lean_not_found` instead of crashing. The MCP server stays open waiting for stdio input, which is normal.
-
-## Current experimental results
-
-| Conjecture | Search result | Known counterexample verified | Interpretation |
-|---|---|---|---|
-| ANNOR-001 | no_counterexample_found | not provided | not refuted by limited search |
-| HDR-001 | no_counterexample_found by random search | true | refuted by verified graph6 counterexample |
-
-## Important interpretation
-
-- `no_counterexample_found` does not prove the conjecture.
-- It only means the search did not find a counterexample within the configured limits.
-- A verified counterexample must satisfy the graph class hypotheses and violate the conjecture inequality.
-- For HDR-001, the random search did not find a counterexample in 200 evaluations, but the known graph6 counterexample was independently verified.
-
-## Reproducibility
-
-- Conjectures are stored as JSON.
-- Results are stored as JSON/Markdown.
-- Each tool returns structured output.
-- The verifier is independent from the LLM response.

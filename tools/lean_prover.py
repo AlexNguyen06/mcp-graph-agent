@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -49,12 +50,17 @@ def check_lean_file(relative_path: str) -> dict:
             "message": "The Lean file contains sorry and is not accepted as a complete proof."
         }
 
+    command = ["lean", str(file_path)]
+    if shutil.which("lake") is not None:
+        command = ["lake", "env", "lean", str(file_path)]
+
     try:
         completed = subprocess.run(
-            ["lean", str(file_path)],
+            command,
             capture_output=True,
             text=True,
-            check=False
+            check=False,
+            cwd=PROJECT_ROOT,
         )
     except FileNotFoundError as exc:
         return {
@@ -85,6 +91,10 @@ def check_lean_file(relative_path: str) -> dict:
     }
 
 
+def check_all_lean_files() -> list[dict]:
+    return [check_lean_file(proof["path"]) for proof in list_lean_proofs()]
+
+
 def list_lean_proofs() -> list[dict]:
     if not LEAN_PROOFS_DIR.exists():
         return []
@@ -103,4 +113,4 @@ def list_lean_proofs() -> list[dict]:
 
 
 if __name__ == "__main__":
-    print(json.dumps(check_lean_file("lean_proofs/T1_basic.lean"), indent=2))
+    print(json.dumps(check_all_lean_files(), indent=2))

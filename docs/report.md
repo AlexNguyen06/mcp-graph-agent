@@ -110,7 +110,7 @@ A minimal Lean prover module was added. It checks Lean files and returns:
 
 Files containing `sorry` are not accepted as complete proofs. If Lean is not installed, the system returns `lean_not_found` instead of crashing.
 
-Current result: `lean_proofs/T1_basic.lean` returned `lean_not_found` in the current environment.
+Current result: `lean_proofs/T1_degree_sum.lean` and `lean_proofs/T2_even_odd_vertices.lean` return `lean_not_found` in the current environment if Lean is not installed.
 
 ## 8. MCP Servers
 
@@ -157,7 +157,8 @@ Lean table:
 
 | File | Status | Contains sorry | Interpretation |
 |---|---|---|---|
-| lean_proofs/T1_basic.lean | lean_not_found | false | Lean is not installed or not available in PATH |
+| lean_proofs/T1_degree_sum.lean | lean_not_found | false | Lean is not installed or not available in PATH |
+| lean_proofs/T2_even_odd_vertices.lean | lean_not_found | false | Lean is not installed or not available in PATH |
 
 ## 11. Limitations
 
@@ -171,9 +172,9 @@ Lean table:
 
 - integrate more HDR conjectures;
 - improve local search heuristics;
-- install Lean 4 in Docker;
+- use the optional Lean Docker service when full Mathlib checking is required;
 - add more true graph theory theorems in Lean;
-- connect the local agent directly to MCP clients;
+- extend the MCP client workflow with richer agent planning;
 - improve conjecture generation and filtering.
 
 ## 13. Conclusion

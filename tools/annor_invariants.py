@@ -1,4 +1,5 @@
 import itertools
+from functools import lru_cache
 import networkx as nx
 
 
@@ -49,10 +50,26 @@ def is_connected_dominating_set(G: nx.Graph, subset) -> bool:
     return nx.is_connected(induced)
 
 
-def minimum_subset_size(G: nx.Graph, predicate):
-    nodes = list(G.nodes)
+def graph_cache_key(G: nx.Graph) -> tuple[int, tuple[tuple[int, int], ...]]:
+    nodes = sorted(G.nodes)
+    index = {node: i for i, node in enumerate(nodes)}
+    edges = tuple(sorted((min(index[u], index[v]), max(index[u], index[v])) for u, v in G.edges))
+    return len(nodes), edges
 
-    for size in range(1, len(nodes) + 1):
+
+def graph_from_cache_key(key: tuple[int, tuple[tuple[int, int], ...]]) -> nx.Graph:
+    order, edges = key
+    G = nx.Graph()
+    G.add_nodes_from(range(order))
+    G.add_edges_from(edges)
+    return G
+
+
+def minimum_subset_size(G: nx.Graph, predicate, cutoff: int | None = None):
+    nodes = list(G.nodes)
+    max_size = min(cutoff or len(nodes), len(nodes))
+
+    for size in range(1, max_size + 1):
         for subset in itertools.combinations(nodes, size):
             if predicate(G, subset):
                 return size
@@ -60,13 +77,37 @@ def minimum_subset_size(G: nx.Graph, predicate):
     return None
 
 
-def domination_number(G: nx.Graph) -> int:
+@lru_cache(maxsize=2048)
+def _domination_number_cached(key) -> int:
+    G = graph_from_cache_key(key)
     return minimum_subset_size(G, is_dominating_set)
 
 
-def total_domination_number(G: nx.Graph) -> int:
+@lru_cache(maxsize=2048)
+def _total_domination_number_cached(key) -> int:
+    G = graph_from_cache_key(key)
     return minimum_subset_size(G, is_total_dominating_set)
 
 
-def connected_domination_number(G: nx.Graph) -> int:
+@lru_cache(maxsize=2048)
+def _connected_domination_number_cached(key) -> int:
+    G = graph_from_cache_key(key)
     return minimum_subset_size(G, is_connected_dominating_set)
+
+
+def domination_number(G: nx.Graph, cutoff: int | None = None) -> int | None:
+    if cutoff is not None:
+        return minimum_subset_size(G, is_dominating_set, cutoff=cutoff)
+    return _domination_number_cached(graph_cache_key(G))
+
+
+def total_domination_number(G: nx.Graph, cutoff: int | None = None) -> int | None:
+    if cutoff is not None:
+        return minimum_subset_size(G, is_total_dominating_set, cutoff=cutoff)
+    return _total_domination_number_cached(graph_cache_key(G))
+
+
+def connected_domination_number(G: nx.Graph, cutoff: int | None = None) -> int | None:
+    if cutoff is not None:
+        return minimum_subset_size(G, is_connected_dominating_set, cutoff=cutoff)
+    return _connected_domination_number_cached(graph_cache_key(G))

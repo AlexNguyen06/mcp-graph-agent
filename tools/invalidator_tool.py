@@ -9,10 +9,10 @@ from tools.search_annor import search_counterexample
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
-def invalidate_conjecture(conjecture_path: str) -> dict:
+def invalidate_conjecture(conjecture_path: str, method: str = "local_search") -> dict:
     conjecture = load_conjecture(conjecture_path)
 
-    search_result = search_counterexample(conjecture)
+    search_result = search_counterexample(conjecture, method=method)
 
     output = {
         "conjecture_id": conjecture["id"],
@@ -20,8 +20,9 @@ def invalidate_conjecture(conjecture_path: str) -> dict:
         "source": conjecture.get("source"),
         "graph_class": conjecture["graph_class"],
         "search": {
-            "method": "random_search",
+            "method": search_result.get("method", method),
             "evaluated": search_result["evaluated"],
+            "iterations": search_result.get("iterations", search_result["evaluated"]),
             "time_seconds": search_result["time_seconds"]
         }
     }
@@ -36,6 +37,7 @@ def invalidate_conjecture(conjecture_path: str) -> dict:
         result = search_result["result"]
 
         output["graph"] = result["graph"]
+        output["counterexample_graph6"] = search_result.get("counterexample_graph6", result["graph"]["graph6"])
         output["verification"] = {
             "valid_graph_class": result["valid_graph_class"],
             "conjecture_satisfied": result["conjecture_satisfied"],

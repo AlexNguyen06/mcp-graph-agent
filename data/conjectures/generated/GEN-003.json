@@ -21,5 +21,9 @@
     "format": "graph6",
     "value": null
   },
-  "status": "candidate"
+  "status": "trivial",
+  "trivial_filter": {
+    "is_trivial": true,
+    "reason": "simple graphs have at most n(n-1)/2 edges"
+  }
 }
